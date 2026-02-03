@@ -1,4 +1,5 @@
 from requests import get, post
+import os.path
 
 class MoonrakerPrinter(object):
     '''Moonraker API interface.
@@ -134,3 +135,20 @@ class MoonrakerPrinter(object):
         '''`response.set` wrapper. `url` is concatenated to printer base address.
         Returns .json response dict.'''
         return post(self.addr + url, *args, **kwargs).json()
+
+
+    def upload_gcode(self, filename:str, gcode:bytes):
+        pload = {"file": (filename, gcode)}
+        data = {"filename" : filename, "print": "false"}
+        r = self.post("/server/files/upload", files=pload, data=data)
+        return r
+
+    def upload_file(self, filename:str):
+        assert os.path.exists(filename), "File '%s' must exist" % (filename, )
+        assert os.path.isfile(filename)
+
+        with open(filename, "rb") as fp:
+            ctnt = fp.read()
+
+        _, name_only = os.path.split(filename)
+        return self.upload_gcode(name_only, ctnt)
