@@ -137,13 +137,13 @@ class MoonrakerPrinter(object):
         return post(self.addr + url, *args, **kwargs).json()
 
 
-    def upload_gcode(self, filename:str, gcode:bytes):
+    def upload_gcode(self, filename:str, gcode:bytes, do_print:bool=False):
         pload = {"file": (filename, gcode)}
-        data = {"filename" : filename, "print": "false"}
+        data = {"filename" : filename, "print": "true" if do_print else "false" }
         r = self.post("/server/files/upload", files=pload, data=data)
         return r
 
-    def upload_file(self, filename:str):
+    def upload_file(self, filename:str, do_print:bool=False):
         assert os.path.exists(filename), "File '%s' must exist" % (filename, )
         assert os.path.isfile(filename)
 
@@ -151,4 +151,4 @@ class MoonrakerPrinter(object):
             ctnt = fp.read()
 
         _, name_only = os.path.split(filename)
-        return self.upload_gcode(name_only, ctnt)
+        return self.upload_gcode(name_only, ctnt, do_print)
